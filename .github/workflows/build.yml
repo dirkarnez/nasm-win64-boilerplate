@@ -1,0 +1,51 @@
+name: cpp-cmake-mingw-prebuilt-release-actions-workflow
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+      - 'c*'
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: windows-latest
+    env:
+      targetZip: nasm-win64-boilerplate-${{ github.ref_name }}.zip
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      # nasm-2.15.05
+      - name: curl nasm-2.15.05-win64.zip
+        shell: cmd
+        run:  curl https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/win64/nasm-2.15.05-win64.zip -L --output nasm-2.15.05-win64.zip && dir && 7z.exe x nasm-2.15.05-win64.zip
+
+      # Golink
+      - name: curl Golink.zip
+        shell: cmd
+        run:  curl http://www.godevtool.com/Golink.zip -L --output Golink.zip && dir && 7z.exe x Golink.zip -o"${{ github.workspace }}\Golink"
+        
+      - name: build
+        shell: cmd
+        run: |
+          set PATH=${{ github.workspace }}\nasm-2.15.05;${{ github.workspace }}Golink
+          nasm -f win64 main.asm -o main.obj &&^
+          GoLink /entry:Start /console kernel32.dll main.obj
+          
+      - shell: cmd
+        run: mkdir "build" && xcopy /E /H /Y /C ".\main.exe" "build"
+        
+      - name: Archive Release
+        uses: thedoctor0/zip-release@master
+        with:
+          type: 'zip'
+          directory: "build"
+          filename: "${{ env.targetZip }}"
+
+      - name: Release prebuilt
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/${{ env.targetZip }}"
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
