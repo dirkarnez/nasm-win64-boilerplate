@@ -29,7 +29,7 @@ jobs:
       - name: build
         shell: cmd
         run: |
-          set PATH=${{ github.workspace }}\nasm-2.15.05;${{ github.workspace }}Golink
+          set PATH=${{ github.workspace }}\nasm-2.15.05;${{ github.workspace }}\Golink
           nasm -f win64 main.asm -o main.obj &&^
           GoLink /entry:Start /console kernel32.dll main.obj
           
