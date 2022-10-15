@@ -34,7 +34,7 @@ jobs:
           GoLink /entry:Start /console kernel32.dll main.obj
           
       - shell: cmd
-        run: mkdir "build" && xcopy /E /H /Y /C ".\main.exe" "build"
+        run: mkdir "build" && xcopy /H /Y /C ".\main.exe" "build"
         
       - name: Archive Release
         uses: thedoctor0/zip-release@master
